@@ -6,10 +6,26 @@ import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Send} from "lucide-react";
 import Swal from "sweetalert2";
+import {Kanit} from "next/font/google";
 
+import {cn} from "@/lib/utils";
 import {Button} from "@/components/ui/button";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+const kanit = Kanit({
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+});
 
 const couponSchema = z.object({
   id: z.string(),
@@ -77,7 +93,7 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
   return (
     <Form {...form}>
       <form
-        className="w-72 space-y-6 rounded-lg bg-neutral-200 p-6"
+        className="h-72 w-72 space-y-6 rounded-lg bg-neutral-100 p-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField
@@ -111,7 +127,7 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
             </FormItem>
           )}
         />
-        <Button className="w-full bg-emerald-700 hover:bg-emerald-900" type="submit">
+        <Button className="w-full bg-emerald-700 align-bottom hover:bg-emerald-900" type="submit">
           <Send />
         </Button>
       </form>
@@ -124,19 +140,33 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1 className="text-center text-4xl font-medium">Cupones de Descuento</h1>
-      <div className="mt-32 grid grid-cols-2 space-x-32">
+      <h1 className={cn("mt-4 text-center text-5xl font-normal", kanit.className)}>
+        Generá tu cupón!
+      </h1>
+      <div className="mt-28 grid grid-cols-2">
         <section className="flex justify-center">
           <ProfileForm dispatch={dispatch} />
         </section>
         <section>
-          <ul className="space-y-6">
-            {coupons.map((coupon) => (
-              <li key={coupon.id}>
-                {coupon.id} - {coupon.email} - {coupon.discount}%
-              </li>
-            ))}
-          </ul>
+          <Table className="rounded-lg bg-neutral-100">
+            <TableCaption className="mt-4">Historial</TableCaption>
+            <TableHeader>
+              <TableRow className="text-lg font-normal">
+                <TableHead>Código</TableHead>
+                <TableHead>Enviado a</TableHead>
+                <TableHead>Descuento</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {coupons.map((coupon) => (
+                <TableRow key={coupon.id}>
+                  <TableCell className="font-medium">{coupon.id}</TableCell>
+                  <TableCell>{coupon.email}</TableCell>
+                  <TableCell>{coupon.discount}%</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </section>
       </div>
     </div>
