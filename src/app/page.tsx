@@ -1,23 +1,16 @@
 "use client";
 
-import {useState} from "react";
+import {useReducer} from "react";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
+import {Send} from "lucide-react";
 
 import {Button} from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
 import {Input} from "@/components/ui/input";
 
-const formSchema = z.object({
+const couponSchema = z.object({
   id: z.string(),
   email: z.string().email({message: "Correo electrónico inválido."}),
   percentage: z
@@ -26,23 +19,47 @@ const formSchema = z.object({
     .max(100, {message: "Porcentaje inválido."}),
 });
 
+type Coupon = z.infer<typeof couponSchema>;
+
+type Action = {type: "ADD_COUPON"; payload: Coupon};
+
+const initialState: Coupon[] = [];
+
+const couponReducer = (state: Coupon[], action: Action) => {
+  switch (action.type) {
+    case "ADD_COUPON":
+      return [...state, action.payload];
+    default:
+      return state;
+  }
+};
+
 function generateUUID() {
-  return crypto.randomUUID();
+  return crypto.randomUUID().substring(0, 8).toUpperCase();
 }
 
-export function ProfileForm() {
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+type ProfileFormProps = {
+  dispatch: React.Dispatch<Action>;
+};
+
+export function ProfileForm({dispatch}: ProfileFormProps) {
+  const form = useForm<Coupon>({
+    resolver: zodResolver(couponSchema),
     defaultValues: {
-      id: "",
+      id: generateUUID(),
       email: "",
       percentage: 0,
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("values", values);
+  function onSubmit(values: Coupon) {
+    dispatch({
+      type: "ADD_COUPON",
+      payload: values,
+    });
+    console.log("coupons", values);
+
+    form.reset({id: generateUUID(), email: "", percentage: 0});
   }
 
   return (
@@ -54,9 +71,11 @@ export function ProfileForm() {
           render={({field}) => (
             <FormItem>
               <FormLabel>CÓDIGO</FormLabel>
-              <FormDescription className="text-xl font-semibold" {...field}>
-                {(field.value = generateUUID().substring(0, 8).toUpperCase())}
-              </FormDescription>
+              <FormControl>
+                <p className="text-xl font-semibold" {...field}>
+                  {field.value}
+                </p>
+              </FormControl>
             </FormItem>
           )}
         />
@@ -92,46 +111,33 @@ export function ProfileForm() {
           )}
         />
         <Button className="bg-emerald-700 hover:bg-emerald-900" type="submit">
-          Enviar
+          <Send />
         </Button>
       </form>
     </Form>
   );
 }
 
-function CouponList() {
-  // Aquí puedes agregar la lógica para obtener y mostrar la lista de cupones generados
-  return (
-    <div>
-      <h2>Lista de Cupones Generados</h2>
-      {/* Aquí puedes renderizar la lista de cupones */}
-    </div>
-  );
-}
-
 export default function HomePage() {
-  const [view, setView] = useState<"form" | "list">("form");
+  const [coupons, dispatch] = useReducer(couponReducer, initialState);
 
   return (
     <div>
       <h1 className="text-center text-4xl font-medium">Cupones de Descuento</h1>
-      <div className="mt-12 flex justify-center space-x-32">
-        <Button
-          className="rounded-lg bg-emerald-700 text-xl font-normal hover:bg-emerald-900"
-          onClick={() => setView("form")}
-        >
-          Generar
-        </Button>
-        <Button
-          className="rounded-lg bg-zinc-400 text-xl font-normal hover:bg-zinc-600"
-          onClick={() => setView("list")}
-        >
-          Listar
-        </Button>
+      <div className="mt-32 grid grid-cols-2 space-x-32">
+        <section className="flex justify-center">
+          <ProfileForm dispatch={dispatch} />
+        </section>
+        <section>
+          <ul className="space-y-6">
+            {coupons.map((coupon) => (
+              <li key={coupon.id}>
+                {coupon.id} - {coupon.email} - {coupon.percentage}%
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
-      <section className="mt-20 flex justify-center">
-        {view === "form" ? <ProfileForm /> : <CouponList />}
-      </section>
     </div>
   );
 }
