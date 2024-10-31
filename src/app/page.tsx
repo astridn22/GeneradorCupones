@@ -14,7 +14,7 @@ import {Input} from "@/components/ui/input";
 const couponSchema = z.object({
   id: z.string(),
   email: z.string().email({message: "Correo electrónico inválido."}),
-  percentage: z
+  discount: z
     .number()
     .min(1, {message: "Porcentaje inválido."})
     .max(100, {message: "Porcentaje inválido."}),
@@ -56,39 +56,30 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
   const form = useForm<Coupon>({
     resolver: zodResolver(couponSchema),
     defaultValues: {
-      id: generateUUID(),
+      id: "",
       email: "",
-      percentage: 0,
+      discount: 0,
     },
   });
 
   function onSubmit(values: Coupon) {
+    values.id = generateUUID();
+
     dispatch({
       type: "ADD_COUPON",
       payload: values,
     });
 
     showAlert();
-    form.reset({id: generateUUID(), email: "", percentage: 0});
+    form.reset({id: generateUUID(), email: "", discount: 0});
   }
 
   return (
     <Form {...form}>
-      <form className=" space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-        <FormField
-          control={form.control}
-          name="id"
-          render={({field}) => (
-            <FormItem>
-              <FormLabel>CÓDIGO</FormLabel>
-              <FormControl>
-                <p className="text-xl font-semibold" {...field}>
-                  {field.value}
-                </p>
-              </FormControl>
-            </FormItem>
-          )}
-        />
+      <form
+        className="w-72 space-y-6 rounded-lg bg-neutral-200 p-6"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         <FormField
           control={form.control}
           name="email"
@@ -96,7 +87,7 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input className="w-56" placeholder="email@gmail.com" {...field} />
+                <Input className="w-full" placeholder="email@gmail.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -104,13 +95,13 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
         />
         <FormField
           control={form.control}
-          name="percentage"
+          name="discount"
           render={({field}) => (
             <FormItem>
-              <FormLabel>Porcentaje</FormLabel>
+              <FormLabel>Descuento</FormLabel>
               <FormControl>
                 <Input
-                  className="w-20"
+                  className="w-full"
                   placeholder="Descuento"
                   {...field}
                   onChange={(e) => field.onChange(Number(e.target.value))}
@@ -120,7 +111,7 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
             </FormItem>
           )}
         />
-        <Button className="bg-emerald-700 hover:bg-emerald-900" type="submit">
+        <Button className="w-full bg-emerald-700 hover:bg-emerald-900" type="submit">
           <Send />
         </Button>
       </form>
@@ -142,7 +133,7 @@ export default function HomePage() {
           <ul className="space-y-6">
             {coupons.map((coupon) => (
               <li key={coupon.id}>
-                {coupon.id} - {coupon.email} - {coupon.percentage}%
+                {coupon.id} - {coupon.email} - {coupon.discount}%
               </li>
             ))}
           </ul>
