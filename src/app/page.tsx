@@ -5,6 +5,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Send} from "lucide-react";
+import Swal from "sweetalert2";
 
 import {Button} from "@/components/ui/button";
 import {Form, FormControl, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
@@ -38,6 +39,15 @@ function generateUUID() {
   return crypto.randomUUID().substring(0, 8).toUpperCase();
 }
 
+function showAlert() {
+  Swal.fire({
+    title: "¡Éxito!",
+    text: "El cupón se ha enviado correctamente.",
+    icon: "success",
+    confirmButtonText: "Aceptar",
+  });
+}
+
 type ProfileFormProps = {
   dispatch: React.Dispatch<Action>;
 };
@@ -59,6 +69,7 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
     });
     console.log("coupons", values);
 
+    showAlert();
     form.reset({id: generateUUID(), email: "", percentage: 0});
   }
 
