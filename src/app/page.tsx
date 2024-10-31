@@ -67,7 +67,6 @@ export function ProfileForm({dispatch}: ProfileFormProps) {
       type: "ADD_COUPON",
       payload: values,
     });
-    console.log("coupons", values);
 
     showAlert();
     form.reset({id: generateUUID(), email: "", percentage: 0});
